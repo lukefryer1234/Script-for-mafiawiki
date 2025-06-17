@@ -1,16 +1,17 @@
 """
 A web scraper script that starts from a given URL, crawls pages on the same domain,
 extracts text content from a specified CSS selector (defaults to 'body'),
-and saves it to a file.
+and saves it to a file in either plain text (.txt) or Markdown (.md) format.
 
 Usage:
-    python wiki_scraper.py <start_url> [-o <output_filename>] [-c <css_selector>]
+    python wiki_scraper.py <start_url> [-o <output_filename>] [-c <css_selector>] [--format <format>]
 
 Example:
-    python wiki_scraper.py "https://en.wikipedia.org/wiki/Python_(programming_language)" -o python_wiki.txt -c "#content"
+    python wiki_scraper.py "https://en.wikipedia.org/wiki/Python_(programming_language)" -o python_wiki -c "#content" --format md
 """
 
 import argparse
+import os
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
@@ -112,8 +113,9 @@ def crawl_wiki(start_url):
     Returns:
         str: A single string containing all extracted text content from the
              visited pages (using the selector), with content from each page
-             separated by "\n\n---\n\n". Returns an empty string if the
-             start_url cannot be fetched or no content is extracted.
+             separated by "\n\n" (suitable for Markdown paragraphs).
+             Returns an empty string if the start_url cannot be fetched or
+             no content is extracted.
     """
     queue = deque()        # Queue for URLs to visit (BFS)
     visited_urls = set()   # Set to keep track of visited URLs to avoid cycles and redundant fetches
@@ -146,8 +148,8 @@ def crawl_wiki(start_url):
             print(f"Failed to fetch or parse HTML from {current_url}. Skipping.")
             continue
 
-    # Join content from all pages with a separator
-    return "\n\n---\n\n".join(all_pages_content)
+    # Join content from all pages with double newlines for paragraph separation
+    return "\n\n".join(all_pages_content)
 
 def save_content_to_file(content, filename):
     """
@@ -172,18 +174,25 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Scrapes a website starting from a given URL, following links on the same domain.")
     parser.add_argument("start_url", help="The starting URL to scrape.")
     parser.add_argument("-o", "--output", default="scraped_content.txt",
-                        help="Name of the output file (default: scraped_content.txt)")
+                        help="Name of the output file (default: scraped_content.txt). Extension will be adjusted by --format.")
     parser.add_argument("-c", "--selector", default="body",
                         help="CSS selector for the main content area (default: 'body')")
+    parser.add_argument("--format", default="txt", choices=["txt", "md"],
+                        help="Output format (txt or md). Default: txt")
 
     args = parser.parse_args()
 
     # Use arguments from command line
     start_page_url = args.start_url
-    output_filename = args.output
+    output_basename = args.output
     content_selector_arg = args.selector
+    output_format_arg = args.format
 
-    print(f"Starting crawl from: {start_page_url} using selector: '{content_selector_arg}'")
+    # Determine output filename based on user input and format
+    base_name, _ = os.path.splitext(output_basename)
+    output_filename = f"{base_name}.{output_format_arg}"
+
+    print(f"Starting crawl from: {start_page_url} using selector: '{content_selector_arg}', output format: {output_format_arg}")
     total_scraped_content = crawl_wiki(start_page_url, content_selector_arg)
 
     print("\n--- Crawling Complete ---")
