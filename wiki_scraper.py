@@ -109,6 +109,9 @@ def crawl_wiki(start_url):
         start_url (str): The initial URL to begin crawling from.
         content_selector (str): The CSS selector for the main content area
                                 to extract text from on each page.
+        status_callback (function, optional): A function to call with status updates
+                                              (e.g., current URL being processed).
+                                              Defaults to None.
 
     Returns:
         str: A single string containing all extracted text content from the
@@ -127,7 +130,10 @@ def crawl_wiki(start_url):
 
     while queue: # Loop as long as there are URLs to process
         current_url = queue.popleft() # Get the next URL from the front of the queue
-        print(f"Crawling: {current_url}")
+        if status_callback:
+            status_callback(f"Processing: {current_url}")
+        else:
+            print(f"Crawling: {current_url}") # Fallback if no callback
 
         html_content = fetch_html(current_url)
 
@@ -144,8 +150,11 @@ def crawl_wiki(start_url):
                     visited_urls.add(link)   # Mark as visited
                     queue.append(link)       # Add to the queue to visit later
         else:
-            # If fetching HTML failed, print a message and skip to the next URL
-            print(f"Failed to fetch or parse HTML from {current_url}. Skipping.")
+            # If fetching HTML failed, use callback or print, then skip to the next URL
+            if status_callback:
+                status_callback(f"Failed to fetch {current_url}. Skipping.")
+            else:
+                print(f"Failed to fetch or parse HTML from {current_url}. Skipping.")
             continue
 
     # Join content from all pages with double newlines for paragraph separation
@@ -192,8 +201,10 @@ if __name__ == '__main__':
     base_name, _ = os.path.splitext(output_basename)
     output_filename = f"{base_name}.{output_format_arg}"
 
+    # In CLI mode, we don't have a status_callback for crawl_wiki by default.
+    # The prints within crawl_wiki will act as the status updates.
     print(f"Starting crawl from: {start_page_url} using selector: '{content_selector_arg}', output format: {output_format_arg}")
-    total_scraped_content = crawl_wiki(start_page_url, content_selector_arg)
+    total_scraped_content = crawl_wiki(start_page_url, content_selector_arg, status_callback=None)
 
     print("\n--- Crawling Complete ---")
     print(f"Total characters scraped: {len(total_scraped_content)}")

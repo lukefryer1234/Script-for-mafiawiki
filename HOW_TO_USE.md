@@ -2,38 +2,42 @@
 
 ## 1. Overview
 
-This document provides detailed instructions on how to use the `wiki_scraper.py` script. This script is designed to crawl a website or wiki, starting from a given URL, extract textual content from its pages, and save it into a single file. It can follow links within the same domain and allows for some customization of the content extraction and output format.
+This document provides detailed instructions on how to use the Wiki Scraper tools. The scraper is designed to crawl a website or wiki, starting from a given URL, extract textual content from its pages, and save it into a single file. It can follow links within the same domain and allows for customization of the content extraction and output format.
 
-Key Features:
+Two interfaces are available:
+*   A **Command-Line Interface (CLI)** using `wiki_scraper.py` for automation and advanced users.
+*   A **Graphical User Interface (GUI)** using `gui_scraper.py` for ease of use.
+
+Key Features (common to both interfaces):
 *   **Web Crawling:** Starts from a specified URL and explores linked pages on the same domain.
 *   **Content Extraction:** Extracts text from web pages. You can specify a CSS selector to target the main content area for more precise extraction.
 *   **Configurable Output:**
     *   Supports output in plain text (`.txt`) or Markdown (`.md`) formats.
     *   Allows specifying the name of the output file.
-*   **Command-Line Interface:** All functionalities are controlled via command-line arguments.
 
-## 2. Installation
+## 2. General Installation
 
 ### Prerequisites
 *   Python 3.6 or higher is recommended.
 *   `pip` (Python package installer).
 
 ### Steps
-1.  **Download the script:**
-    *   Ensure you have the `wiki_scraper.py` file.
+1.  **Download the scripts:**
+    *   Ensure you have `wiki_scraper.py` and (if using the GUI) `gui_scraper.py`.
     *   (If applicable, mention cloning the repository if it were in one, e.g., `git clone <repo_url>`)
 
 2.  **Install required Python libraries:**
     *   Open your terminal or command prompt.
-    *   Navigate to the directory where `wiki_scraper.py` is located (if necessary).
-    *   Run the following command to install `requests` and `beautifulsoup4`:
+    *   Navigate to the directory where the scripts are located (if necessary).
+    *   Run the following command to install `requests` (for web requests) and `beautifulsoup4` (for HTML parsing). These are needed for both the CLI and GUI versions.
         ```bash
         pip install requests beautifulsoup4
         ```
+    *   The GUI version also uses Tkinter, which is part of Python's standard library, so no separate installation is usually needed for it.
 
-## 3. Usage
+## 3. Using the Command-Line Scraper (`wiki_scraper.py`)
 
-The script is run from the command line.
+The command-line script (`wiki_scraper.py`) is ideal for users who prefer to work in the terminal, need to automate scraping tasks, or want to integrate the scraper into other scripts.
 
 ### Command Syntax
 ```bash
@@ -57,6 +61,7 @@ python wiki_scraper.py <start_url> [options]
     *   Description: A CSS selector that points to the main content area of the pages you are scraping. This helps in extracting only the relevant text and excluding headers, footers, navigation menus, etc.
     *   Default: `'body'` (extracts all text within the `<body>` tag, which can be very broad).
     *   Example: `--selector "#content"` or `--selector ".article-body"` or `--selector "article"`
+    *   See Section 5: "Tips for Finding CSS Selectors" for more details.
 
 *   **`--format <format>`** (Optional)
     *   Description: Specifies the output file format.
@@ -64,7 +69,7 @@ python wiki_scraper.py <start_url> [options]
     *   Default: `txt`.
     *   Example: `--format md`
 
-### Examples
+### CLI Examples
 
 1.  **Basic Scrape (Text Output, default filename):**
     ```bash
@@ -84,10 +89,69 @@ python wiki_scraper.py <start_url> [options]
     ```
     *   This targets content within the HTML element having the ID `main-article-body` (e.g., `<div id="main-article-body">...</div>`). Output will be `game_items.md`.
 
+## 4. Using the GUI Scraper (`gui_scraper.py`)
 
-## 4. Tips for Finding CSS Selectors
+The GUI scraper (`gui_scraper.py`) provides a user-friendly graphical interface for the same core scraping functionality.
 
-To effectively use the `--selector` option, you need to find a CSS selector that accurately targets the main content of the wiki pages. Here's how:
+### Launching the GUI
+1.  Ensure you have completed the steps in Section 2: "General Installation".
+2.  Open your terminal or command prompt.
+3.  Navigate to the directory where the scripts are located.
+4.  Run the following command:
+    ```bash
+    python gui_scraper.py
+    ```
+    This will launch the "Wiki Scraper Deluxe" application window.
+
+### Interface Overview
+The GUI window consists of the following components:
+
+*   **Start URL field:**
+    *   Purpose: Enter the full starting URL for the website or wiki you wish to scrape.
+    *   Example: `https://en.wikipedia.org/wiki/Web_scraping`
+
+*   **CSS Selector field:**
+    *   Purpose: Optionally, enter a CSS selector to target the specific HTML element containing the main content on the pages. This helps to get cleaner text by excluding navigation, ads, footers, etc.
+    *   Default: If left empty, it defaults to scraping the entire `<body>` of the pages.
+    *   Hint: A small label below this field provides examples like `#main-content` or `article.body`.
+    *   For detailed help on finding good selectors, refer to Section 5: "Tips for Finding CSS Selectors".
+
+*   **Output Format:**
+    *   Purpose: Choose the format for the saved file.
+    *   Options:
+        *   **TXT:** Plain text file (`.txt`).
+        *   **MD:** Markdown file (`.md`), where paragraphs are separated by double newlines.
+
+*   **Output File field & "Browse..." button:**
+    *   Purpose: To specify where the scraped content will be saved.
+    *   **"Browse..." button:** Click this button to open a "Save As" dialog. Here you can navigate to your desired directory, type a filename, and select the file type (which will often be pre-filtered by your "Output Format" choice).
+    *   **Output File field:** This (read-only) field displays the full path to the file you selected or named via the "Browse..." dialog.
+    *   **Important:** You must use "Browse..." to set an output file before starting the scrape.
+
+*   **"START SCRAPING" button:**
+    *   Purpose: Click this button to begin the web scraping process after you have filled in the URL and selected an output file.
+    *   The button will be temporarily disabled while scraping is in progress.
+
+*   **Status Area:**
+    *   Purpose: A scrollable text box at the bottom of the window. It displays real-time messages about the scraper's progress, such as:
+        *   The current URL being processed.
+        *   Confirmation when scraping starts and finishes.
+        *   The number of characters extracted.
+        *   Error messages if any issues occur.
+
+### Step-by-Step Usage Guide (GUI)
+1.  **Launch the application:** Run `python gui_scraper.py` from your terminal.
+2.  **Enter Start URL:** Type or paste the full URL of the website/wiki you want to scrape into the "Start URL" field.
+3.  **Enter CSS Selector (Optional):** If you want to target specific content areas, enter the appropriate CSS selector in the "CSS Selector" field. If unsure, you can leave this blank to use the default (`body`).
+4.  **Select Output Format:** Click either the "TXT" or "MD" radio button to choose your desired output file format.
+5.  **Specify Output File:** Click the "Browse..." button. In the dialog that appears, choose a directory, enter a filename for your scraped content, and click "Save". The chosen path will appear in the field next to the button. **This step is mandatory.**
+6.  **Start Scraping:** Click the "START SCRAPING" button.
+7.  **Monitor Progress:** Observe the "Status Area" for updates on the scraping process. You'll see which URLs are being processed and any errors.
+8.  **Completion:** Once the scraping is complete, a message will indicate this in the Status Area, and the content will be saved to the file you specified. The "START SCRAPING" button will become active again.
+
+## 5. Tips for Finding CSS Selectors
+
+To effectively use the `--selector` option (in CLI) or the "CSS Selector" field (in GUI), you need to find a CSS selector that accurately targets the main content of the wiki pages. Here's how:
 
 1.  **Open Developer Tools:**
     *   In your web browser (Chrome, Firefox, Edge, etc.), navigate to one of the wiki pages you want to scrape.
@@ -108,10 +172,12 @@ To effectively use the `--selector` option, you need to find a CSS selector that
 4.  **Test the Selector (Optional but Recommended):**
     *   In the developer tools' "Console" or "Elements" tab (varies by browser), you can often test CSS selectors. For example, in Chrome's console, you could type `document.querySelectorAll('#your-selector')` to see what elements it matches.
 
-## 5. Basic Troubleshooting
+## 6. Basic Troubleshooting
+
+These tips apply to both the CLI and GUI versions.
 
 *   **No content extracted / Empty output file:**
-    *   Check your `--selector`. It might be too specific, incorrect, or the content structure might change between pages. Try a broader selector (like `article`, `main`, or even the default `body`) to see if any text is extracted.
+    *   Check your CSS selector (if used). It might be too specific, incorrect, or the content structure might change between pages. Try a broader selector (like `article`, `main`, or even the default `body`) to see if any text is extracted.
     *   Verify the start URL is correct and accessible.
     *   The website might be heavily JavaScript-driven. This script primarily works with server-rendered HTML. Content loaded by JavaScript after the initial page load might not be captured.
 
@@ -126,6 +192,10 @@ To effectively use the `--selector` option, you need to find a CSS selector that
 
 *   **Incorrect character encoding:**
     *   The script saves in UTF-8. If you see garbled characters, ensure the source website is also using a compatible encoding (most modern sites use UTF-8).
+
+*   **GUI doesn't start (specific to `gui_scraper.py`):**
+    *   Ensure Python and Tkinter are correctly installed. While Tkinter is standard, minimal Python installations might sometimes omit it (though rare).
+    *   Check the terminal for any error messages when you try to run `python gui_scraper.py`.
 
 ---
 If you encounter issues not covered here, please refer to the script's comments or seek further assistance if a support channel is available.
